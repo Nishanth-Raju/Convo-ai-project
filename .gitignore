@@ -1,0 +1,8 @@
+client_secret.json
+*.wav
+*.mp3
+analysis_result.txt
+uploads/
+tts/
+leafy-unity-436523-a9-11bbe805fe19.json
+*.json

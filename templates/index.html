@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audio Analysis</title>
+</head>
+
+<body>
+    <h1>Audio Transcription and Sentiment Analysis</h1>
+    <button id="recordButton">Start Recording</button>
+    <p id="statusMessage">Click the button to start recording.</p>
+
+    <form id="uploadForm" action="/analyze-audio" method="post" enctype="multipart/form-data" style="display: none;">
+        <input type="file" name="audioFile" id="audioFile" hidden>
+        <button type="submit">Analyze</button>
+    </form>
+
+    <script>
+        let mediaRecorder;
+        let audioChunks = [];
+
+        document.getElementById("recordButton").addEventListener("click", async () => {
+            const recordButton = document.getElementById("recordButton");
+            const statusMessage = document.getElementById("statusMessage");
+
+            if (mediaRecorder && mediaRecorder.state === "recording") {
+                mediaRecorder.stop();
+                recordButton.textContent = "Start Recording";
+                statusMessage.textContent = "Recording stopped. Uploading...";
+            } else {
+                // Request access to the microphone
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(stream);
+
+                mediaRecorder.ondataavailable = (event) => {
+                    audioChunks.push(event.data);
+
+                    if (mediaRecorder.state === "inactive") {
+                        const audioBlob = new Blob(audioChunks, { type: "audio/wav" });
+                        const formData = new FormData();
+                        formData.append("audioFile", audioBlob, "recording.wav");
+
+                        // Upload the audio blob via a POST request
+                        fetch("/analyze-audio", {
+                            method: "POST",
+                            body: formData,
+                        })
+                            .then((response) => response.text())
+                            .then((data) => {
+                                statusMessage.textContent = `Analysis Complete: ${data}`;
+                            })
+                            .catch((error) => {
+                                statusMessage.textContent = `Error: ${error.message}`;
+                            });
+                    }
+                };
+
+                // Start recording
+                mediaRecorder.start();
+                audioChunks = [];
+                recordButton.textContent = "Stop Recording";
+                statusMessage.textContent = "Recording in progress...";
+            }
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,9 @@
+Flask
+requests
+debugpy # Required for debugging.
+google-cloud-speech
+google-cloud-texttospeech
+google-cloud-language
+google-cloud-aiplatform
+google-ai-generativelanguage
+google-generativeai
